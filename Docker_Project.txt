@@ -1,0 +1,1458 @@
+login as: vagrant
+vagrant@192.168.1.5's password:
+Last login: Fri Jan 22 16:16:42 2021
+[vagrant@localhost ~]$ docker --version
+Docker version 20.10.2, build 2291f61
+[vagrant@localhost ~]$ docker run -d --name myhttp httpd
+docker: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?.
+See 'docker run --help'.
+[vagrant@localhost ~]$ ^C
+[vagrant@localhost ~]$ docker: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?.
+-bash: docker:: command not found
+[vagrant@localhost ~]$ docker: Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?.
+-bash: docker:: command not found
+[vagrant@localhost ~]$ docker pull httpd
+Using default tag: latest
+Cannot connect to the Docker daemon at unix:///var/run/docker.sock. Is the docker daemon running?
+[vagrant@localhost ~]$ sudo service docker restart
+Redirecting to /bin/systemctl restart docker.service
+[vagrant@localhost ~]$ docker run -d --name myhttp httpd                        Unable to find image 'httpd:latest' locally
+latest: Pulling from library/httpd
+a076a628af6f: Pull complete
+e444656f7792: Pull complete
+0ec35e191b09: Pull complete
+4aad5d8db1a6: Pull complete
+eb1da3ea630f: Pull complete
+Digest: sha256:2fab99fb3b1c7ddfa99d7dc55de8dad0a62dbe3e7c605d78ecbdf2c6c49fd636
+Status: Downloaded newer image for httpd:latest
+6acb1e0788f8ee12c5ffd6857ca1b343003d871b20efa8bfc7d0b24251e0a197
+[vagrant@localhost ~]$ docker ps
+CONTAINER ID   IMAGE     COMMAND              CREATED          STATUS          PORTS     NAMES
+6acb1e0788f8   httpd     "httpd-foreground"   22 seconds ago   Up 19 seconds   80/tcp    myhttp
+[vagrant@localhost ~]$ docker inspect myhttp | grep IPA
+            "SecondaryIPAddresses": null,
+            "IPAddress": "172.17.0.2",
+                    "IPAMConfig": null,
+                    "IPAddress": "172.17.0.2",
+[vagrant@localhost ~]$ curl http://172.17.0.2
+<html><body><h1>It works!</h1></body></html>
+[vagrant@localhost ~]$ docker stop $(docker ps -q)
+6acb1e0788f8
+[vagrant@localhost ~]$ docker rm  $(docker ps -q)
+"docker rm" requires at least 1 argument.
+See 'docker rm --help'.
+
+Usage:  docker rm [OPTIONS] CONTAINER [CONTAINER...]
+
+Remove one or more containers
+[vagrant@localhost ~]$ docker run -d -p 8888:80 --name myhttp httpd
+docker: Error response from daemon: Conflict. The container name "/myhttp" is already in use by container "6acb1e0788f8ee12c5ffd6857ca1b343003d871b20efa8bfc7d0b24251e0a197". You have to remove (or rename) that container to be able to reuse that name.
+See 'docker run --help'.
+[vagrant@localhost ~]$ docker ps
+CONTAINER ID   IMAGE     COMMAND   CREATED   STATUS    PORTS     NAMES
+[vagrant@localhost ~]$ docker rm  $(docker ps -aq)
+6acb1e0788f8
+14e0155cce65
+6b573bff16a0
+d152bfe542ea
+155afe9c85f8
+[vagrant@localhost ~]$ docker run -d -p 8888:80 --name myhttp httpd
+41f26f91bf281383ce7edf7a47115ce262210a3ebae107c8cdb4c64ea74dfbd4
+[vagrant@localhost ~]$ curl http://localhost:8888
+<html><body><h1>It works!</h1></body></html>
+[vagrant@localhost ~]$ ip a
+1: lo: <LOOPBACK,UP,LOWER_UP> mtu 65536 qdisc noqueue state UNKNOWN group default qlen 1000
+    link/loopback 00:00:00:00:00:00 brd 00:00:00:00:00:00
+    inet 127.0.0.1/8 scope host lo
+       valid_lft forever preferred_lft forever
+    inet6 ::1/128 scope host
+       valid_lft forever preferred_lft forever
+2: eth0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+    link/ether 08:00:27:c6:a5:e3 brd ff:ff:ff:ff:ff:ff
+    inet 192.168.1.5/24 brd 192.168.1.255 scope global noprefixroute dynamic eth0
+       valid_lft 82302sec preferred_lft 82302sec
+    inet6 fe80::a00:27ff:fec6:a5e3/64 scope link
+       valid_lft forever preferred_lft forever
+3: docker0: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default
+    link/ether 02:42:f1:55:65:3f brd ff:ff:ff:ff:ff:ff
+    inet 172.17.0.1/16 brd 172.17.255.255 scope global docker0
+       valid_lft forever preferred_lft forever
+    inet6 fe80::42:f1ff:fe55:653f/64 scope link
+       valid_lft forever preferred_lft forever
+7: veth37a4948@if6: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue master docker0 state UP group default
+    link/ether ae:a1:b0:77:bc:89 brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet6 fe80::aca1:b0ff:fe77:bc89/64 scope link
+       valid_lft forever preferred_lft forever
+[vagrant@localhost ~]$ docker ps
+CONTAINER ID   IMAGE     COMMAND              CREATED         STATUS         PORTS                  NAMES
+41f26f91bf28   httpd     "httpd-foreground"   3 minutes ago   Up 3 minutes   0.0.0.0:8888->80/tcp   myhttp
+[vagrant@localhost ~]$ docker exec -it myhttp /bin/bash
+root@41f26f91bf28:/usr/local/apache2# cat htdocs/index.html
+<html><body><h1>It works!</h1></body></html>
+root@41f26f91bf28:/usr/local/apache2# echo '<html><body><h1>It is Workshop!</h1></body></html>' > htdocs/index.html
+root@41f26f91bf28:/usr/local/apache2# cat htdocs/index.html                     <html><body><h1>It is Workshop!</h1></body></html>
+root@41f26f91bf28:/usr/local/apache2# exit
+exit
+[vagrant@localhost ~]$ docker stop myhttp
+myhttp
+[vagrant@localhost ~]$ docker image save
+"docker image save" requires at least 1 argument.
+See 'docker image save --help'.
+
+Usage:  docker image save [OPTIONS] IMAGE [IMAGE...]
+
+Save one or more images to a tar archive (streamed to STDOUT by default)
+[vagrant@localhost ~]$ docker container
+
+Usage:  docker container COMMAND
+
+Manage containers
+
+Commands:
+  attach      Attach local standard input, output, and error streams to a running container
+  commit      Create a new image from a container's changes
+  cp          Copy files/folders between a container and the local filesystem
+  create      Create a new container
+  diff        Inspect changes to files or directories on a container's filesystem
+  exec        Run a command in a running container
+  export      Export a container's filesystem as a tar archive
+  inspect     Display detailed information on one or more containers
+  kill        Kill one or more running containers
+  logs        Fetch the logs of a container
+  ls          List containers
+  pause       Pause all processes within one or more containers
+  port        List port mappings or a specific mapping for the container
+  prune       Remove all stopped containers
+  rename      Rename a container
+  restart     Restart one or more containers
+  rm          Remove one or more containers
+  run         Run a command in a new container
+  start       Start one or more stopped containers
+  stats       Display a live stream of container(s) resource usage statistics
+  stop        Stop one or more running containers
+  top         Display the running processes of a container
+  unpause     Unpause all processes within one or more containers
+  update      Update configuration of one or more containers
+  wait        Block until one or more containers stop, then print their exit codes
+
+Run 'docker container COMMAND --help' for more information on a command.
+[vagrant@localhost ~]$ docker container export myhttp
+cowardly refusing to save to a terminal. Use the -o flag or redirect
+[vagrant@localhost ~]$ docker container export myhttp -o myhttp.tar
+[vagrant@localhost ~]$ ls
+myhttp.tar  mysqldb
+[vagrant@localhost ~]$ docker images
+REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+httpd         latest    683a7aad17d3   10 days ago     138MB
+mysql         5.7.32    f07dfa83b528   4 weeks ago     448MB
+ubuntu        latest    f643c72bc252   8 weeks ago     72.9MB
+hello-world   latest    bf756fb1ae65   12 months ago   13.3kB
+[vagrant@localhost ~]$ docker import myhttp.tar
+sha256:aae3bb77cd5722d77e5955f589a77a703a2387a01db517251fa4be235982c68a
+[vagrant@localhost ~]$ docker images
+REPOSITORY    TAG       IMAGE ID       CREATED         SIZE
+<none>        <none>    aae3bb77cd57   4 seconds ago   134MB
+httpd         latest    683a7aad17d3   10 days ago     138MB
+mysql         5.7.32    f07dfa83b528   4 weeks ago     448MB
+ubuntu        latest    f643c72bc252   8 weeks ago     72.9MB
+hello-world   latest    bf756fb1ae65   12 months ago   13.3kB
+[vagrant@localhost ~]$ docker tag aae3bb77cd57 myhttp
+[vagrant@localhost ~]$ docker images
+REPOSITORY    TAG       IMAGE ID       CREATED          SIZE
+myhttp        latest    aae3bb77cd57   52 seconds ago   134MB
+httpd         latest    683a7aad17d3   10 days ago      138MB
+mysql         5.7.32    f07dfa83b528   4 weeks ago      448MB
+ubuntu        latest    f643c72bc252   8 weeks ago      72.9MB
+hello-world   latest    bf756fb1ae65   12 months ago    13.3kB
+[vagrant@localhost ~]$ docker run -d -p 5000:5000 --restart always --name registry registry:2
+Unable to find image 'registry:2' locally
+2: Pulling from library/registry
+0a6724ff3fcd: Pull complete
+d550a247d74f: Pull complete
+1a938458ca36: Pull complete
+acd758c36fc9: Pull complete
+9af6d68b484a: Pull complete
+Digest: sha256:d5459fcb27aecc752520df4b492b08358a1912fcdfa454f7d2101d4b09991daa
+Status: Downloaded newer image for registry:2
+28eb1e471ec303a049bc560de3bf205c231aaec82efb213a6c203ae5c89e6cf7
+[vagrant@localhost ~]$ docker ps
+CONTAINER ID   IMAGE        COMMAND                  CREATED         STATUS         PORTS                    NAMES
+28eb1e471ec3   registry:2   "/entrypoint.sh /etc…"   8 seconds ago   Up 7 seconds   0.0.0.0:5000->5000/tcp   registry
+[vagrant@localhost ~]$ docker tag myhttp localhost:5000/myhttp
+[vagrant@localhost ~]$ docker images
+REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
+myhttp                  latest    aae3bb77cd57   12 minutes ago   134MB
+localhost:5000/myhttp   latest    aae3bb77cd57   12 minutes ago   134MB
+httpd                   latest    683a7aad17d3   10 days ago      138MB
+mysql                   5.7.32    f07dfa83b528   4 weeks ago      448MB
+registry                2         678dfa38fcfa   5 weeks ago      26.2MB
+ubuntu                  latest    f643c72bc252   8 weeks ago      72.9MB
+hello-world             latest    bf756fb1ae65   12 months ago    13.3kB
+[vagrant@localhost ~]$ docker push localhost:5000/myhttp
+Using default tag: latest
+The push refers to repository [localhost:5000/myhttp]
+a8fe2495bfbd: Pushed
+latest: digest: sha256:f863eba8a2dc40ac85eac68134aa181d8e12c22d8051f5816939b890f7ada0c2 size: 528
+[vagrant@localhost ~]$ docker ps -a
+CONTAINER ID   IMAGE        COMMAND                  CREATED          STATUS                      PORTS                    NAMES
+28eb1e471ec3   registry:2   "/entrypoint.sh /etc…"   7 minutes ago    Up 7 minutes                0.0.0.0:5000->5000/tcp   registry
+41f26f91bf28   httpd        "httpd-foreground"       29 minutes ago   Exited (0) 21 minutes ago                            myhttp
+[vagrant@localhost ~]$ docker inspect myhttp | grep -i port
+            "PortBindings": {
+                        "HostPort": "8888"
+            "PublishAllPorts": false,
+            "ExposedPorts": {
+            "Ports": {},
+[vagrant@localhost ~]$ docker inspect myhttp | less
+[vagrant@localhost ~]$ docker ps -l
+CONTAINER ID   IMAGE        COMMAND                  CREATED         STATUS         PORTS                    NAMES
+28eb1e471ec3   registry:2   "/entrypoint.sh /etc…"   8 minutes ago   Up 8 minutes   0.0.0.0:5000->5000/tcp   registry
+[vagrant@localhost ~]$ docker ps
+CONTAINER ID   IMAGE        COMMAND                  CREATED          STATUS          PORTS                    NAMES
+28eb1e471ec3   registry:2   "/entrypoint.sh /etc…"   20 minutes ago   Up 20 minutes   0.0.0.0:5000->5000/tcp   registry
+[vagrant@localhost ~]$ mkdir sample_image
+[vagrant@localhost ~]$ cd sample_image
+[vagrant@localhost sample_image]$ vim Dockerfile
+[vagrant@localhost sample_image]$ cat Dockerfile
+FROM ubuntu
+RUN apt-get update
+RUN apt-get install -y apache2
+RUN apt-get install -y apache2-utils
+RUN apt-get clean
+EXPOSE 80
+CMD ["apache2ctl", "-D", "FOREGROUND"]
+
+[vagrant@localhost sample_image]$ docker build -t myapache .
+Sending build context to Docker daemon  2.048kB
+Step 1/7 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/7 : RUN apt-get update
+ ---> Running in 6c0ae2bce661
+Get:1 http://archive.ubuntu.com/ubuntu focal InRelease [265 kB]
+Get:2 http://security.ubuntu.com/ubuntu focal-security InRelease [109 kB]
+Get:3 http://archive.ubuntu.com/ubuntu focal-updates InRelease [114 kB]
+Get:4 http://archive.ubuntu.com/ubuntu focal-backports InRelease [101 kB]
+Get:5 http://security.ubuntu.com/ubuntu focal-security/main amd64 Packages [569 kB]
+Get:6 http://archive.ubuntu.com/ubuntu focal/multiverse amd64 Packages [177 kB]
+Get:7 http://security.ubuntu.com/ubuntu focal-security/restricted amd64 Packages [154 kB]
+Get:8 http://archive.ubuntu.com/ubuntu focal/restricted amd64 Packages [33.4 kB]
+Get:9 http://archive.ubuntu.com/ubuntu focal/universe amd64 Packages [11.3 MB]
+Get:10 http://security.ubuntu.com/ubuntu focal-security/multiverse amd64 Packages [13.3 kB]
+Get:11 http://security.ubuntu.com/ubuntu focal-security/universe amd64 Packages [652 kB]
+Get:12 http://archive.ubuntu.com/ubuntu focal/main amd64 Packages [1275 kB]
+Get:13 http://archive.ubuntu.com/ubuntu focal-updates/universe amd64 Packages [910 kB]
+Get:14 http://archive.ubuntu.com/ubuntu focal-updates/multiverse amd64 Packages [20.8 kB]
+Get:15 http://archive.ubuntu.com/ubuntu focal-updates/restricted amd64 Packages [185 kB]
+Get:16 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 Packages [971 kB]
+Get:17 http://archive.ubuntu.com/ubuntu focal-backports/universe amd64 Packages [4301 B]
+Fetched 16.9 MB in 7s (2429 kB/s)
+Reading package lists...
+Removing intermediate container 6c0ae2bce661
+ ---> 103f04ff34eb
+Step 3/7 : RUN apt-get install -y apache2
+ ---> Running in 3608952ef015
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  apache2-bin apache2-data apache2-utils ca-certificates file krb5-locales
+  libapr1 libaprutil1 libaprutil1-dbd-sqlite3 libaprutil1-ldap
+  libasn1-8-heimdal libbrotli1 libcurl4 libexpat1 libgdbm-compat4 libgdbm6
+  libgssapi-krb5-2 libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
+  libheimntlm0-heimdal libhx509-5-heimdal libicu66 libjansson4 libk5crypto3
+  libkeyutils1 libkrb5-26-heimdal libkrb5-3 libkrb5support0 libldap-2.4-2
+  libldap-common liblua5.2-0 libmagic-mgc libmagic1 libnghttp2-14 libperl5.30
+  libpsl5 libroken18-heimdal librtmp1 libsasl2-2 libsasl2-modules
+  libsasl2-modules-db libsqlite3-0 libssh-4 libssl1.1 libwind0-heimdal libxml2
+  mime-support netbase openssl perl perl-modules-5.30 publicsuffix ssl-cert
+  tzdata xz-utils
+Suggested packages:
+  apache2-doc apache2-suexec-pristine | apache2-suexec-custom www-browser ufw
+  gdbm-l10n krb5-doc krb5-user libsasl2-modules-gssapi-mit
+  | libsasl2-modules-gssapi-heimdal libsasl2-modules-ldap libsasl2-modules-otp
+  libsasl2-modules-sql perl-doc libterm-readline-gnu-perl
+  | libterm-readline-perl-perl make libb-debug-perl liblocale-codes-perl
+  openssl-blacklist
+The following NEW packages will be installed:
+  apache2 apache2-bin apache2-data apache2-utils ca-certificates file
+  krb5-locales libapr1 libaprutil1 libaprutil1-dbd-sqlite3 libaprutil1-ldap
+  libasn1-8-heimdal libbrotli1 libcurl4 libexpat1 libgdbm-compat4 libgdbm6
+  libgssapi-krb5-2 libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
+  libheimntlm0-heimdal libhx509-5-heimdal libicu66 libjansson4 libk5crypto3
+  libkeyutils1 libkrb5-26-heimdal libkrb5-3 libkrb5support0 libldap-2.4-2
+  libldap-common liblua5.2-0 libmagic-mgc libmagic1 libnghttp2-14 libperl5.30
+  libpsl5 libroken18-heimdal librtmp1 libsasl2-2 libsasl2-modules
+  libsasl2-modules-db libsqlite3-0 libssh-4 libssl1.1 libwind0-heimdal libxml2
+  mime-support netbase openssl perl perl-modules-5.30 publicsuffix ssl-cert
+  tzdata xz-utils
+0 upgraded, 57 newly installed, 0 to remove and 6 not upgraded.
+Need to get 24.1 MB of archives.
+After this operation, 117 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 perl-modules-5.30 all 5.30.0-9ubuntu0.2 [2738 kB]
+Get:2 http://archive.ubuntu.com/ubuntu focal/main amd64 libgdbm6 amd64 1.18.1-5 [27.4 kB]
+Get:3 http://archive.ubuntu.com/ubuntu focal/main amd64 libgdbm-compat4 amd64 1.18.1-5 [6244 B]
+Get:4 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libperl5.30 amd64 5.30.0-9ubuntu0.2 [3952 kB]
+Get:5 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 perl amd64 5.30.0-9ubuntu0.2 [224 kB]
+Get:6 http://archive.ubuntu.com/ubuntu focal/main amd64 libapr1 amd64 1.6.5-1ubuntu1 [91.4 kB]
+Get:7 http://archive.ubuntu.com/ubuntu focal/main amd64 libexpat1 amd64 2.2.9-1build1 [73.3 kB]
+Get:8 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libssl1.1 amd64 1.1.1f-1ubuntu2.1 [1319 kB]
+Get:9 http://archive.ubuntu.com/ubuntu focal/main amd64 libaprutil1 amd64 1.6.1-4ubuntu2 [84.7 kB]
+Get:10 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libsqlite3-0 amd64 3.31.1-4ubuntu0.2 [549 kB]
+Get:11 http://archive.ubuntu.com/ubuntu focal/main amd64 libaprutil1-dbd-sqlite3 amd64 1.6.1-4ubuntu2 [10.5 kB]
+Get:12 http://archive.ubuntu.com/ubuntu focal/main amd64 libroken18-heimdal amd64 7.7.0+dfsg-1ubuntu1 [41.8 kB]
+Get:13 http://archive.ubuntu.com/ubuntu focal/main amd64 libasn1-8-heimdal amd64 7.7.0+dfsg-1ubuntu1 [181 kB]
+Get:14 http://archive.ubuntu.com/ubuntu focal/main amd64 libheimbase1-heimdal amd64 7.7.0+dfsg-1ubuntu1 [29.7 kB]
+Get:15 http://archive.ubuntu.com/ubuntu focal/main amd64 libhcrypto4-heimdal amd64 7.7.0+dfsg-1ubuntu1 [87.9 kB]
+Get:16 http://archive.ubuntu.com/ubuntu focal/main amd64 libwind0-heimdal amd64 7.7.0+dfsg-1ubuntu1 [48.0 kB]
+Get:17 http://archive.ubuntu.com/ubuntu focal/main amd64 libhx509-5-heimdal amd64 7.7.0+dfsg-1ubuntu1 [107 kB]
+Get:18 http://archive.ubuntu.com/ubuntu focal/main amd64 libkrb5-26-heimdal amd64 7.7.0+dfsg-1ubuntu1 [208 kB]
+Get:19 http://archive.ubuntu.com/ubuntu focal/main amd64 libheimntlm0-heimdal amd64 7.7.0+dfsg-1ubuntu1 [15.1 kB]
+Get:20 http://archive.ubuntu.com/ubuntu focal/main amd64 libgssapi3-heimdal amd64 7.7.0+dfsg-1ubuntu1 [96.1 kB]
+Get:21 http://archive.ubuntu.com/ubuntu focal/main amd64 libsasl2-modules-db amd64 2.1.27+dfsg-2 [14.9 kB]
+Get:22 http://archive.ubuntu.com/ubuntu focal/main amd64 libsasl2-2 amd64 2.1.27+dfsg-2 [49.3 kB]
+Get:23 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libldap-common all 2.4.49+dfsg-2ubuntu1.5 [16.8 kB]
+Get:24 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libldap-2.4-2 amd64 2.4.49+dfsg-2ubuntu1.5 [155 kB]
+Get:25 http://archive.ubuntu.com/ubuntu focal/main amd64 libaprutil1-ldap amd64 1.6.1-4ubuntu2 [8736 B]
+Get:26 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libbrotli1 amd64 1.0.7-6ubuntu0.1 [267 kB]
+Get:27 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libkrb5support0 amd64 1.17-6ubuntu4.1 [30.9 kB]
+Get:28 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libk5crypto3 amd64 1.17-6ubuntu4.1 [79.9 kB]
+Get:29 http://archive.ubuntu.com/ubuntu focal/main amd64 libkeyutils1 amd64 1.6-6ubuntu1 [10.2 kB]
+Get:30 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libkrb5-3 amd64 1.17-6ubuntu4.1 [330 kB]
+Get:31 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libgssapi-krb5-2 amd64 1.17-6ubuntu4.1 [121 kB]
+Get:32 http://archive.ubuntu.com/ubuntu focal/main amd64 libnghttp2-14 amd64 1.40.0-1build1 [78.7 kB]
+Get:33 http://archive.ubuntu.com/ubuntu focal/main amd64 libpsl5 amd64 0.21.0-1ubuntu1 [51.5 kB]
+Get:34 http://archive.ubuntu.com/ubuntu focal/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2build1 [54.9 kB]
+Get:35 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libssh-4 amd64 0.9.3-2ubuntu2.1 [170 kB]
+Get:36 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libcurl4 amd64 7.68.0-1ubuntu2.4 [234 kB]
+Get:37 http://archive.ubuntu.com/ubuntu focal/main amd64 libjansson4 amd64 2.12-1build1 [28.9 kB]
+Get:38 http://archive.ubuntu.com/ubuntu focal/main amd64 liblua5.2-0 amd64 5.2.4-1.1build3 [106 kB]
+Get:39 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 tzdata all 2020f-0ubuntu0.20.04.1 [296 kB]
+Get:40 http://archive.ubuntu.com/ubuntu focal/main amd64 libicu66 amd64 66.1-2ubuntu2 [8520 kB]
+Get:41 http://archive.ubuntu.com/ubuntu focal/main amd64 libxml2 amd64 2.9.10+dfsg-5 [640 kB]
+Get:42 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 apache2-bin amd64 2.4.41-4ubuntu3.1 [1180 kB]
+Get:43 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 apache2-data all 2.4.41-4ubuntu3.1 [158 kB]
+Get:44 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 apache2-utils amd64 2.4.41-4ubuntu3.1 [83.8 kB]
+Get:45 http://archive.ubuntu.com/ubuntu focal/main amd64 mime-support all 3.64ubuntu1 [30.6 kB]
+Get:46 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 apache2 amd64 2.4.41-4ubuntu3.1 [95.5 kB]
+Get:47 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 openssl amd64 1.1.1f-1ubuntu2.1 [620 kB]
+Get:48 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 ca-certificates all 20201027ubuntu0.20.04.1 [153 kB]
+Get:49 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic-mgc amd64 1:5.38-4 [218 kB]
+Get:50 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic1 amd64 1:5.38-4 [75.9 kB]
+Get:51 http://archive.ubuntu.com/ubuntu focal/main amd64 file amd64 1:5.38-4 [23.3 kB]
+Get:52 http://archive.ubuntu.com/ubuntu focal/main amd64 netbase all 6.1 [13.1 kB]
+Get:53 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 xz-utils amd64 5.2.4-1ubuntu1 [82.5 kB]
+Get:54 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 krb5-locales all 1.17-6ubuntu4.1 [11.4 kB]
+Get:55 http://archive.ubuntu.com/ubuntu focal/main amd64 publicsuffix all 20200303.0012-1 [111 kB]
+Get:56 http://archive.ubuntu.com/ubuntu focal/main amd64 libsasl2-modules amd64 2.1.27+dfsg-2 [49.1 kB]
+Get:57 http://archive.ubuntu.com/ubuntu focal/main amd64 ssl-cert all 1.0.39 [17.0 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 24.1 MB in 25s (946 kB/s)
+Selecting previously unselected package perl-modules-5.30.
+(Reading database ... 4121 files and directories currently installed.)
+Preparing to unpack .../00-perl-modules-5.30_5.30.0-9ubuntu0.2_all.deb ...
+Unpacking perl-modules-5.30 (5.30.0-9ubuntu0.2) ...
+Selecting previously unselected package libgdbm6:amd64.
+Preparing to unpack .../01-libgdbm6_1.18.1-5_amd64.deb ...
+Unpacking libgdbm6:amd64 (1.18.1-5) ...
+Selecting previously unselected package libgdbm-compat4:amd64.
+Preparing to unpack .../02-libgdbm-compat4_1.18.1-5_amd64.deb ...
+Unpacking libgdbm-compat4:amd64 (1.18.1-5) ...
+Selecting previously unselected package libperl5.30:amd64.
+Preparing to unpack .../03-libperl5.30_5.30.0-9ubuntu0.2_amd64.deb ...
+Unpacking libperl5.30:amd64 (5.30.0-9ubuntu0.2) ...
+Selecting previously unselected package perl.
+Preparing to unpack .../04-perl_5.30.0-9ubuntu0.2_amd64.deb ...
+Unpacking perl (5.30.0-9ubuntu0.2) ...
+Selecting previously unselected package libapr1:amd64.
+Preparing to unpack .../05-libapr1_1.6.5-1ubuntu1_amd64.deb ...
+Unpacking libapr1:amd64 (1.6.5-1ubuntu1) ...
+Selecting previously unselected package libexpat1:amd64.
+Preparing to unpack .../06-libexpat1_2.2.9-1build1_amd64.deb ...
+Unpacking libexpat1:amd64 (2.2.9-1build1) ...
+Selecting previously unselected package libssl1.1:amd64.
+Preparing to unpack .../07-libssl1.1_1.1.1f-1ubuntu2.1_amd64.deb ...
+Unpacking libssl1.1:amd64 (1.1.1f-1ubuntu2.1) ...
+Selecting previously unselected package libaprutil1:amd64.
+Preparing to unpack .../08-libaprutil1_1.6.1-4ubuntu2_amd64.deb ...
+Unpacking libaprutil1:amd64 (1.6.1-4ubuntu2) ...
+Selecting previously unselected package libsqlite3-0:amd64.
+Preparing to unpack .../09-libsqlite3-0_3.31.1-4ubuntu0.2_amd64.deb ...
+Unpacking libsqlite3-0:amd64 (3.31.1-4ubuntu0.2) ...
+Selecting previously unselected package libaprutil1-dbd-sqlite3:amd64.
+Preparing to unpack .../10-libaprutil1-dbd-sqlite3_1.6.1-4ubuntu2_amd64.deb ...
+Unpacking libaprutil1-dbd-sqlite3:amd64 (1.6.1-4ubuntu2) ...
+Selecting previously unselected package libroken18-heimdal:amd64.
+Preparing to unpack .../11-libroken18-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libroken18-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libasn1-8-heimdal:amd64.
+Preparing to unpack .../12-libasn1-8-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libasn1-8-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libheimbase1-heimdal:amd64.
+Preparing to unpack .../13-libheimbase1-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libheimbase1-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libhcrypto4-heimdal:amd64.
+Preparing to unpack .../14-libhcrypto4-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libhcrypto4-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libwind0-heimdal:amd64.
+Preparing to unpack .../15-libwind0-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libwind0-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libhx509-5-heimdal:amd64.
+Preparing to unpack .../16-libhx509-5-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libhx509-5-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libkrb5-26-heimdal:amd64.
+Preparing to unpack .../17-libkrb5-26-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libkrb5-26-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libheimntlm0-heimdal:amd64.
+Preparing to unpack .../18-libheimntlm0-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libheimntlm0-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libgssapi3-heimdal:amd64.
+Preparing to unpack .../19-libgssapi3-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libgssapi3-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libsasl2-modules-db:amd64.
+Preparing to unpack .../20-libsasl2-modules-db_2.1.27+dfsg-2_amd64.deb ...
+Unpacking libsasl2-modules-db:amd64 (2.1.27+dfsg-2) ...
+Selecting previously unselected package libsasl2-2:amd64.
+Preparing to unpack .../21-libsasl2-2_2.1.27+dfsg-2_amd64.deb ...
+Unpacking libsasl2-2:amd64 (2.1.27+dfsg-2) ...
+Selecting previously unselected package libldap-common.
+Preparing to unpack .../22-libldap-common_2.4.49+dfsg-2ubuntu1.5_all.deb ...
+Unpacking libldap-common (2.4.49+dfsg-2ubuntu1.5) ...
+Selecting previously unselected package libldap-2.4-2:amd64.
+Preparing to unpack .../23-libldap-2.4-2_2.4.49+dfsg-2ubuntu1.5_amd64.deb ...
+Unpacking libldap-2.4-2:amd64 (2.4.49+dfsg-2ubuntu1.5) ...
+Selecting previously unselected package libaprutil1-ldap:amd64.
+Preparing to unpack .../24-libaprutil1-ldap_1.6.1-4ubuntu2_amd64.deb ...
+Unpacking libaprutil1-ldap:amd64 (1.6.1-4ubuntu2) ...
+Selecting previously unselected package libbrotli1:amd64.
+Preparing to unpack .../25-libbrotli1_1.0.7-6ubuntu0.1_amd64.deb ...
+Unpacking libbrotli1:amd64 (1.0.7-6ubuntu0.1) ...
+Selecting previously unselected package libkrb5support0:amd64.
+Preparing to unpack .../26-libkrb5support0_1.17-6ubuntu4.1_amd64.deb ...
+Unpacking libkrb5support0:amd64 (1.17-6ubuntu4.1) ...
+Selecting previously unselected package libk5crypto3:amd64.
+Preparing to unpack .../27-libk5crypto3_1.17-6ubuntu4.1_amd64.deb ...
+Unpacking libk5crypto3:amd64 (1.17-6ubuntu4.1) ...
+Selecting previously unselected package libkeyutils1:amd64.
+Preparing to unpack .../28-libkeyutils1_1.6-6ubuntu1_amd64.deb ...
+Unpacking libkeyutils1:amd64 (1.6-6ubuntu1) ...
+Selecting previously unselected package libkrb5-3:amd64.
+Preparing to unpack .../29-libkrb5-3_1.17-6ubuntu4.1_amd64.deb ...
+Unpacking libkrb5-3:amd64 (1.17-6ubuntu4.1) ...
+Selecting previously unselected package libgssapi-krb5-2:amd64.
+Preparing to unpack .../30-libgssapi-krb5-2_1.17-6ubuntu4.1_amd64.deb ...
+Unpacking libgssapi-krb5-2:amd64 (1.17-6ubuntu4.1) ...
+Selecting previously unselected package libnghttp2-14:amd64.
+Preparing to unpack .../31-libnghttp2-14_1.40.0-1build1_amd64.deb ...
+Unpacking libnghttp2-14:amd64 (1.40.0-1build1) ...
+Selecting previously unselected package libpsl5:amd64.
+Preparing to unpack .../32-libpsl5_0.21.0-1ubuntu1_amd64.deb ...
+Unpacking libpsl5:amd64 (0.21.0-1ubuntu1) ...
+Selecting previously unselected package librtmp1:amd64.
+Preparing to unpack .../33-librtmp1_2.4+20151223.gitfa8646d.1-2build1_amd64.deb ...
+Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build1) ...
+Selecting previously unselected package libssh-4:amd64.
+Preparing to unpack .../34-libssh-4_0.9.3-2ubuntu2.1_amd64.deb ...
+Unpacking libssh-4:amd64 (0.9.3-2ubuntu2.1) ...
+Selecting previously unselected package libcurl4:amd64.
+Preparing to unpack .../35-libcurl4_7.68.0-1ubuntu2.4_amd64.deb ...
+Unpacking libcurl4:amd64 (7.68.0-1ubuntu2.4) ...
+Selecting previously unselected package libjansson4:amd64.
+Preparing to unpack .../36-libjansson4_2.12-1build1_amd64.deb ...
+Unpacking libjansson4:amd64 (2.12-1build1) ...
+Selecting previously unselected package liblua5.2-0:amd64.
+Preparing to unpack .../37-liblua5.2-0_5.2.4-1.1build3_amd64.deb ...
+Unpacking liblua5.2-0:amd64 (5.2.4-1.1build3) ...
+Selecting previously unselected package tzdata.
+Preparing to unpack .../38-tzdata_2020f-0ubuntu0.20.04.1_all.deb ...
+Unpacking tzdata (2020f-0ubuntu0.20.04.1) ...
+Selecting previously unselected package libicu66:amd64.
+Preparing to unpack .../39-libicu66_66.1-2ubuntu2_amd64.deb ...
+Unpacking libicu66:amd64 (66.1-2ubuntu2) ...
+Selecting previously unselected package libxml2:amd64.
+Preparing to unpack .../40-libxml2_2.9.10+dfsg-5_amd64.deb ...
+Unpacking libxml2:amd64 (2.9.10+dfsg-5) ...
+Selecting previously unselected package apache2-bin.
+Preparing to unpack .../41-apache2-bin_2.4.41-4ubuntu3.1_amd64.deb ...
+Unpacking apache2-bin (2.4.41-4ubuntu3.1) ...
+Selecting previously unselected package apache2-data.
+Preparing to unpack .../42-apache2-data_2.4.41-4ubuntu3.1_all.deb ...
+Unpacking apache2-data (2.4.41-4ubuntu3.1) ...
+Selecting previously unselected package apache2-utils.
+Preparing to unpack .../43-apache2-utils_2.4.41-4ubuntu3.1_amd64.deb ...
+Unpacking apache2-utils (2.4.41-4ubuntu3.1) ...
+Selecting previously unselected package mime-support.
+Preparing to unpack .../44-mime-support_3.64ubuntu1_all.deb ...
+Unpacking mime-support (3.64ubuntu1) ...
+Selecting previously unselected package apache2.
+Preparing to unpack .../45-apache2_2.4.41-4ubuntu3.1_amd64.deb ...
+Unpacking apache2 (2.4.41-4ubuntu3.1) ...
+Selecting previously unselected package openssl.
+Preparing to unpack .../46-openssl_1.1.1f-1ubuntu2.1_amd64.deb ...
+Unpacking openssl (1.1.1f-1ubuntu2.1) ...
+Selecting previously unselected package ca-certificates.
+Preparing to unpack .../47-ca-certificates_20201027ubuntu0.20.04.1_all.deb ...
+Unpacking ca-certificates (20201027ubuntu0.20.04.1) ...
+Selecting previously unselected package libmagic-mgc.
+Preparing to unpack .../48-libmagic-mgc_1%3a5.38-4_amd64.deb ...
+Unpacking libmagic-mgc (1:5.38-4) ...
+Selecting previously unselected package libmagic1:amd64.
+Preparing to unpack .../49-libmagic1_1%3a5.38-4_amd64.deb ...
+Unpacking libmagic1:amd64 (1:5.38-4) ...
+Selecting previously unselected package file.
+Preparing to unpack .../50-file_1%3a5.38-4_amd64.deb ...
+Unpacking file (1:5.38-4) ...
+Selecting previously unselected package netbase.
+Preparing to unpack .../51-netbase_6.1_all.deb ...
+Unpacking netbase (6.1) ...
+Selecting previously unselected package xz-utils.
+Preparing to unpack .../52-xz-utils_5.2.4-1ubuntu1_amd64.deb ...
+Unpacking xz-utils (5.2.4-1ubuntu1) ...
+Selecting previously unselected package krb5-locales.
+Preparing to unpack .../53-krb5-locales_1.17-6ubuntu4.1_all.deb ...
+Unpacking krb5-locales (1.17-6ubuntu4.1) ...
+Selecting previously unselected package publicsuffix.
+Preparing to unpack .../54-publicsuffix_20200303.0012-1_all.deb ...
+Unpacking publicsuffix (20200303.0012-1) ...
+Selecting previously unselected package libsasl2-modules:amd64.
+Preparing to unpack .../55-libsasl2-modules_2.1.27+dfsg-2_amd64.deb ...
+Unpacking libsasl2-modules:amd64 (2.1.27+dfsg-2) ...
+Selecting previously unselected package ssl-cert.
+Preparing to unpack .../56-ssl-cert_1.0.39_all.deb ...
+Unpacking ssl-cert (1.0.39) ...
+Setting up libexpat1:amd64 (2.2.9-1build1) ...
+Setting up libkeyutils1:amd64 (1.6-6ubuntu1) ...
+Setting up libpsl5:amd64 (0.21.0-1ubuntu1) ...
+Setting up perl-modules-5.30 (5.30.0-9ubuntu0.2) ...
+Setting up mime-support (3.64ubuntu1) ...
+Setting up libmagic-mgc (1:5.38-4) ...
+Setting up libssl1.1:amd64 (1.1.1f-1ubuntu2.1) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+Setting up libbrotli1:amd64 (1.0.7-6ubuntu0.1) ...
+Setting up libsqlite3-0:amd64 (3.31.1-4ubuntu0.2) ...
+Setting up libsasl2-modules:amd64 (2.1.27+dfsg-2) ...
+Setting up libnghttp2-14:amd64 (1.40.0-1build1) ...
+Setting up libmagic1:amd64 (1:5.38-4) ...
+Setting up libapr1:amd64 (1.6.5-1ubuntu1) ...
+Setting up krb5-locales (1.17-6ubuntu4.1) ...
+Setting up file (1:5.38-4) ...
+Setting up libldap-common (2.4.49+dfsg-2ubuntu1.5) ...
+Setting up libjansson4:amd64 (2.12-1build1) ...
+Setting up libkrb5support0:amd64 (1.17-6ubuntu4.1) ...
+Setting up libsasl2-modules-db:amd64 (2.1.27+dfsg-2) ...
+Setting up tzdata (2020f-0ubuntu0.20.04.1) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+Configuring tzdata
+------------------
+
+Please select the geographic area in which you live. Subsequent configuration
+questions will narrow this down by presenting a list of cities, representing
+the time zones in which they are located.
+
+  1. Africa      4. Australia  7. Atlantic  10. Pacific  13. Etc
+  2. America     5. Arctic     8. Europe    11. SystemV
+  3. Antarctica  6. Asia       9. Indian    12. US
+Geographic area: 9
+Indian
+
+
+
+
+
+
+
+
+^C
+[vagrant@localhost sample_image]$ docker images
+REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
+<none>                  <none>    103f04ff34eb   5 minutes ago    99.7MB
+myhttp                  latest    aae3bb77cd57   45 minutes ago   134MB
+localhost:5000/myhttp   latest    aae3bb77cd57   45 minutes ago   134MB
+httpd                   latest    683a7aad17d3   10 days ago      138MB
+mysql                   5.7.32    f07dfa83b528   4 weeks ago      448MB
+registry                2         678dfa38fcfa   5 weeks ago      26.2MB
+ubuntu                  latest    f643c72bc252   8 weeks ago      72.9MB
+hello-world             latest    bf756fb1ae65   12 months ago    13.3kB
+[vagrant@localhost sample_image]$ ls
+Dockerfile
+[vagrant@localhost sample_image]$ file Dockerfile
+Dockerfile: ASCII text
+[vagrant@localhost sample_image]$ vim Dockerfile
+[vagrant@localhost sample_image]$ docker build -t myapache .
+Sending build context to Docker daemon  2.048kB
+Step 1/8 : FROM ubuntu
+ ---> f643c72bc252
+Step 2/8 : RUN apt-get update
+ ---> Using cache
+ ---> 103f04ff34eb
+Step 3/8 : RUN apt-get install -y tzdata
+ ---> Running in 8cc1f963b8e2
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following NEW packages will be installed:
+  tzdata
+0 upgraded, 1 newly installed, 0 to remove and 6 not upgraded.
+Need to get 296 kB of archives.
+After this operation, 4033 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 tzdata all 2020f-0ubuntu0.20.04.1 [296 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 296 kB in 1s (447 kB/s)
+Selecting previously unselected package tzdata.
+(Reading database ... 4121 files and directories currently installed.)
+Preparing to unpack .../tzdata_2020f-0ubuntu0.20.04.1_all.deb ...
+Unpacking tzdata (2020f-0ubuntu0.20.04.1) ...
+Setting up tzdata (2020f-0ubuntu0.20.04.1) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+debconf: unable to initialize frontend: Readline
+debconf: (Can't locate Term/ReadLine.pm in @INC (you may need to install the Term::ReadLine module) (@INC contains: /etc/perl /usr/local/lib/x86_64-linux-gnu/perl/5.30.0 /usr/local/share/perl/5.30.0 /usr/lib/x86_64-linux-gnu/perl5/5.30 /usr/share/perl5 /usr/lib/x86_64-linux-gnu/perl/5.30 /usr/share/perl/5.30 /usr/local/lib/site_perl /usr/lib/x86_64-linux-gnu/perl-base) at /usr/share/perl5/Debconf/FrontEnd/Readline.pm line 7.)
+debconf: falling back to frontend: Teletype
+Configuring tzdata
+------------------
+
+Please select the geographic area in which you live. Subsequent configuration
+questions will narrow this down by presenting a list of cities, representing
+the time zones in which they are located.
+
+  1. Africa      4. Australia  7. Atlantic  10. Pacific  13. Etc
+  2. America     5. Arctic     8. Europe    11. SystemV
+  3. Antarctica  6. Asia       9. Indian    12. US
+Geographic area:
+Use of uninitialized value $_[1] in join or string at /usr/share/perl5/Debconf/DbDriver/Stack.pm line 111.
+
+Current default time zone: '/UTC'
+Local time is now:      Fri Jan 22 18:32:50 UTC 2021.
+Universal Time is now:  Fri Jan 22 18:32:50 UTC 2021.
+Run 'dpkg-reconfigure tzdata' if you wish to change it.
+
+Use of uninitialized value $val in substitution (s///) at /usr/share/perl5/Debconf/Format/822.pm line 83, <GEN6> line 4.
+Use of uninitialized value $val in concatenation (.) or string at /usr/share/perl5/Debconf/Format/822.pm line 84, <GEN6> line 4.
+Removing intermediate container 8cc1f963b8e2
+ ---> 0ce83540ebab
+Step 4/8 : RUN apt-get install -y apache2
+ ---> Running in 16715cbc79aa
+Reading package lists...
+Building dependency tree...
+Reading state information...
+The following additional packages will be installed:
+  apache2-bin apache2-data apache2-utils ca-certificates file krb5-locales
+  libapr1 libaprutil1 libaprutil1-dbd-sqlite3 libaprutil1-ldap
+  libasn1-8-heimdal libbrotli1 libcurl4 libexpat1 libgdbm-compat4 libgdbm6
+  libgssapi-krb5-2 libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
+  libheimntlm0-heimdal libhx509-5-heimdal libicu66 libjansson4 libk5crypto3
+  libkeyutils1 libkrb5-26-heimdal libkrb5-3 libkrb5support0 libldap-2.4-2
+  libldap-common liblua5.2-0 libmagic-mgc libmagic1 libnghttp2-14 libperl5.30
+  libpsl5 libroken18-heimdal librtmp1 libsasl2-2 libsasl2-modules
+  libsasl2-modules-db libsqlite3-0 libssh-4 libssl1.1 libwind0-heimdal libxml2
+  mime-support netbase openssl perl perl-modules-5.30 publicsuffix ssl-cert
+  xz-utils
+Suggested packages:
+  apache2-doc apache2-suexec-pristine | apache2-suexec-custom www-browser ufw
+  gdbm-l10n krb5-doc krb5-user libsasl2-modules-gssapi-mit
+  | libsasl2-modules-gssapi-heimdal libsasl2-modules-ldap libsasl2-modules-otp
+  libsasl2-modules-sql perl-doc libterm-readline-gnu-perl
+  | libterm-readline-perl-perl make libb-debug-perl liblocale-codes-perl
+  openssl-blacklist
+The following NEW packages will be installed:
+  apache2 apache2-bin apache2-data apache2-utils ca-certificates file
+  krb5-locales libapr1 libaprutil1 libaprutil1-dbd-sqlite3 libaprutil1-ldap
+  libasn1-8-heimdal libbrotli1 libcurl4 libexpat1 libgdbm-compat4 libgdbm6
+  libgssapi-krb5-2 libgssapi3-heimdal libhcrypto4-heimdal libheimbase1-heimdal
+  libheimntlm0-heimdal libhx509-5-heimdal libicu66 libjansson4 libk5crypto3
+  libkeyutils1 libkrb5-26-heimdal libkrb5-3 libkrb5support0 libldap-2.4-2
+  libldap-common liblua5.2-0 libmagic-mgc libmagic1 libnghttp2-14 libperl5.30
+  libpsl5 libroken18-heimdal librtmp1 libsasl2-2 libsasl2-modules
+  libsasl2-modules-db libsqlite3-0 libssh-4 libssl1.1 libwind0-heimdal libxml2
+  mime-support netbase openssl perl perl-modules-5.30 publicsuffix ssl-cert
+  xz-utils
+0 upgraded, 56 newly installed, 0 to remove and 6 not upgraded.
+Need to get 23.8 MB of archives.
+After this operation, 113 MB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 perl-modules-5.30 all 5.30.0-9ubuntu0.2 [2738 kB]
+Get:2 http://archive.ubuntu.com/ubuntu focal/main amd64 libgdbm6 amd64 1.18.1-5 [27.4 kB]
+Get:3 http://archive.ubuntu.com/ubuntu focal/main amd64 libgdbm-compat4 amd64 1.18.1-5 [6244 B]
+Get:4 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libperl5.30 amd64 5.30.0-9ubuntu0.2 [3952 kB]
+Get:5 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 perl amd64 5.30.0-9ubuntu0.2 [224 kB]
+Get:6 http://archive.ubuntu.com/ubuntu focal/main amd64 libapr1 amd64 1.6.5-1ubuntu1 [91.4 kB]
+Get:7 http://archive.ubuntu.com/ubuntu focal/main amd64 libexpat1 amd64 2.2.9-1build1 [73.3 kB]
+Get:8 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libssl1.1 amd64 1.1.1f-1ubuntu2.1 [1319 kB]
+Get:9 http://archive.ubuntu.com/ubuntu focal/main amd64 libaprutil1 amd64 1.6.1-4ubuntu2 [84.7 kB]
+Get:10 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libsqlite3-0 amd64 3.31.1-4ubuntu0.2 [549 kB]
+Get:11 http://archive.ubuntu.com/ubuntu focal/main amd64 libaprutil1-dbd-sqlite3 amd64 1.6.1-4ubuntu2 [10.5 kB]
+Get:12 http://archive.ubuntu.com/ubuntu focal/main amd64 libroken18-heimdal amd64 7.7.0+dfsg-1ubuntu1 [41.8 kB]
+Get:13 http://archive.ubuntu.com/ubuntu focal/main amd64 libasn1-8-heimdal amd64 7.7.0+dfsg-1ubuntu1 [181 kB]
+Get:14 http://archive.ubuntu.com/ubuntu focal/main amd64 libheimbase1-heimdal amd64 7.7.0+dfsg-1ubuntu1 [29.7 kB]
+Get:15 http://archive.ubuntu.com/ubuntu focal/main amd64 libhcrypto4-heimdal amd64 7.7.0+dfsg-1ubuntu1 [87.9 kB]
+Get:16 http://archive.ubuntu.com/ubuntu focal/main amd64 libwind0-heimdal amd64 7.7.0+dfsg-1ubuntu1 [48.0 kB]
+Get:17 http://archive.ubuntu.com/ubuntu focal/main amd64 libhx509-5-heimdal amd64 7.7.0+dfsg-1ubuntu1 [107 kB]
+Get:18 http://archive.ubuntu.com/ubuntu focal/main amd64 libkrb5-26-heimdal amd64 7.7.0+dfsg-1ubuntu1 [208 kB]
+Get:19 http://archive.ubuntu.com/ubuntu focal/main amd64 libheimntlm0-heimdal amd64 7.7.0+dfsg-1ubuntu1 [15.1 kB]
+Get:20 http://archive.ubuntu.com/ubuntu focal/main amd64 libgssapi3-heimdal amd64 7.7.0+dfsg-1ubuntu1 [96.1 kB]
+Get:21 http://archive.ubuntu.com/ubuntu focal/main amd64 libsasl2-modules-db amd64 2.1.27+dfsg-2 [14.9 kB]
+Get:22 http://archive.ubuntu.com/ubuntu focal/main amd64 libsasl2-2 amd64 2.1.27+dfsg-2 [49.3 kB]
+Get:23 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libldap-common all 2.4.49+dfsg-2ubuntu1.5 [16.8 kB]
+Get:24 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libldap-2.4-2 amd64 2.4.49+dfsg-2ubuntu1.5 [155 kB]
+Get:25 http://archive.ubuntu.com/ubuntu focal/main amd64 libaprutil1-ldap amd64 1.6.1-4ubuntu2 [8736 B]
+Get:26 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libbrotli1 amd64 1.0.7-6ubuntu0.1 [267 kB]
+Get:27 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libkrb5support0 amd64 1.17-6ubuntu4.1 [30.9 kB]
+Get:28 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libk5crypto3 amd64 1.17-6ubuntu4.1 [79.9 kB]
+Get:29 http://archive.ubuntu.com/ubuntu focal/main amd64 libkeyutils1 amd64 1.6-6ubuntu1 [10.2 kB]
+Get:30 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libkrb5-3 amd64 1.17-6ubuntu4.1 [330 kB]
+Get:31 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libgssapi-krb5-2 amd64 1.17-6ubuntu4.1 [121 kB]
+Get:32 http://archive.ubuntu.com/ubuntu focal/main amd64 libnghttp2-14 amd64 1.40.0-1build1 [78.7 kB]
+Get:33 http://archive.ubuntu.com/ubuntu focal/main amd64 libpsl5 amd64 0.21.0-1ubuntu1 [51.5 kB]
+Get:34 http://archive.ubuntu.com/ubuntu focal/main amd64 librtmp1 amd64 2.4+20151223.gitfa8646d.1-2build1 [54.9 kB]
+Get:35 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libssh-4 amd64 0.9.3-2ubuntu2.1 [170 kB]
+Get:36 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 libcurl4 amd64 7.68.0-1ubuntu2.4 [234 kB]
+Get:37 http://archive.ubuntu.com/ubuntu focal/main amd64 libjansson4 amd64 2.12-1build1 [28.9 kB]
+Get:38 http://archive.ubuntu.com/ubuntu focal/main amd64 liblua5.2-0 amd64 5.2.4-1.1build3 [106 kB]
+Get:39 http://archive.ubuntu.com/ubuntu focal/main amd64 libicu66 amd64 66.1-2ubuntu2 [8520 kB]
+Get:40 http://archive.ubuntu.com/ubuntu focal/main amd64 libxml2 amd64 2.9.10+dfsg-5 [640 kB]
+Get:41 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 apache2-bin amd64 2.4.41-4ubuntu3.1 [1180 kB]
+Get:42 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 apache2-data all 2.4.41-4ubuntu3.1 [158 kB]
+Get:43 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 apache2-utils amd64 2.4.41-4ubuntu3.1 [83.8 kB]
+Get:44 http://archive.ubuntu.com/ubuntu focal/main amd64 mime-support all 3.64ubuntu1 [30.6 kB]
+Get:45 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 apache2 amd64 2.4.41-4ubuntu3.1 [95.5 kB]
+Get:46 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 openssl amd64 1.1.1f-1ubuntu2.1 [620 kB]
+Get:47 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 ca-certificates all 20201027ubuntu0.20.04.1 [153 kB]
+Get:48 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic-mgc amd64 1:5.38-4 [218 kB]
+Get:49 http://archive.ubuntu.com/ubuntu focal/main amd64 libmagic1 amd64 1:5.38-4 [75.9 kB]
+Get:50 http://archive.ubuntu.com/ubuntu focal/main amd64 file amd64 1:5.38-4 [23.3 kB]
+Get:51 http://archive.ubuntu.com/ubuntu focal/main amd64 netbase all 6.1 [13.1 kB]
+Get:52 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 xz-utils amd64 5.2.4-1ubuntu1 [82.5 kB]
+Get:53 http://archive.ubuntu.com/ubuntu focal-updates/main amd64 krb5-locales all 1.17-6ubuntu4.1 [11.4 kB]
+Get:54 http://archive.ubuntu.com/ubuntu focal/main amd64 publicsuffix all 20200303.0012-1 [111 kB]
+Get:55 http://archive.ubuntu.com/ubuntu focal/main amd64 libsasl2-modules amd64 2.1.27+dfsg-2 [49.1 kB]
+Get:56 http://archive.ubuntu.com/ubuntu focal/main amd64 ssl-cert all 1.0.39 [17.0 kB]
+debconf: delaying package configuration, since apt-utils is not installed
+Fetched 23.8 MB in 22s (1064 kB/s)
+Selecting previously unselected package perl-modules-5.30.
+(Reading database ... 6033 files and directories currently installed.)
+Preparing to unpack .../00-perl-modules-5.30_5.30.0-9ubuntu0.2_all.deb ...
+Unpacking perl-modules-5.30 (5.30.0-9ubuntu0.2) ...
+Selecting previously unselected package libgdbm6:amd64.
+Preparing to unpack .../01-libgdbm6_1.18.1-5_amd64.deb ...
+Unpacking libgdbm6:amd64 (1.18.1-5) ...
+Selecting previously unselected package libgdbm-compat4:amd64.
+Preparing to unpack .../02-libgdbm-compat4_1.18.1-5_amd64.deb ...
+Unpacking libgdbm-compat4:amd64 (1.18.1-5) ...
+Selecting previously unselected package libperl5.30:amd64.
+Preparing to unpack .../03-libperl5.30_5.30.0-9ubuntu0.2_amd64.deb ...
+Unpacking libperl5.30:amd64 (5.30.0-9ubuntu0.2) ...
+Selecting previously unselected package perl.
+Preparing to unpack .../04-perl_5.30.0-9ubuntu0.2_amd64.deb ...
+Unpacking perl (5.30.0-9ubuntu0.2) ...
+Selecting previously unselected package libapr1:amd64.
+Preparing to unpack .../05-libapr1_1.6.5-1ubuntu1_amd64.deb ...
+Unpacking libapr1:amd64 (1.6.5-1ubuntu1) ...
+Selecting previously unselected package libexpat1:amd64.
+Preparing to unpack .../06-libexpat1_2.2.9-1build1_amd64.deb ...
+Unpacking libexpat1:amd64 (2.2.9-1build1) ...
+Selecting previously unselected package libssl1.1:amd64.
+Preparing to unpack .../07-libssl1.1_1.1.1f-1ubuntu2.1_amd64.deb ...
+Unpacking libssl1.1:amd64 (1.1.1f-1ubuntu2.1) ...
+Selecting previously unselected package libaprutil1:amd64.
+Preparing to unpack .../08-libaprutil1_1.6.1-4ubuntu2_amd64.deb ...
+Unpacking libaprutil1:amd64 (1.6.1-4ubuntu2) ...
+Selecting previously unselected package libsqlite3-0:amd64.
+Preparing to unpack .../09-libsqlite3-0_3.31.1-4ubuntu0.2_amd64.deb ...
+Unpacking libsqlite3-0:amd64 (3.31.1-4ubuntu0.2) ...
+Selecting previously unselected package libaprutil1-dbd-sqlite3:amd64.
+Preparing to unpack .../10-libaprutil1-dbd-sqlite3_1.6.1-4ubuntu2_amd64.deb ...
+Unpacking libaprutil1-dbd-sqlite3:amd64 (1.6.1-4ubuntu2) ...
+Selecting previously unselected package libroken18-heimdal:amd64.
+Preparing to unpack .../11-libroken18-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libroken18-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libasn1-8-heimdal:amd64.
+Preparing to unpack .../12-libasn1-8-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libasn1-8-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libheimbase1-heimdal:amd64.
+Preparing to unpack .../13-libheimbase1-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libheimbase1-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libhcrypto4-heimdal:amd64.
+Preparing to unpack .../14-libhcrypto4-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libhcrypto4-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libwind0-heimdal:amd64.
+Preparing to unpack .../15-libwind0-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libwind0-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libhx509-5-heimdal:amd64.
+Preparing to unpack .../16-libhx509-5-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libhx509-5-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libkrb5-26-heimdal:amd64.
+Preparing to unpack .../17-libkrb5-26-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libkrb5-26-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libheimntlm0-heimdal:amd64.
+Preparing to unpack .../18-libheimntlm0-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libheimntlm0-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libgssapi3-heimdal:amd64.
+Preparing to unpack .../19-libgssapi3-heimdal_7.7.0+dfsg-1ubuntu1_amd64.deb ...
+Unpacking libgssapi3-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Selecting previously unselected package libsasl2-modules-db:amd64.
+Preparing to unpack .../20-libsasl2-modules-db_2.1.27+dfsg-2_amd64.deb ...
+Unpacking libsasl2-modules-db:amd64 (2.1.27+dfsg-2) ...
+Selecting previously unselected package libsasl2-2:amd64.
+Preparing to unpack .../21-libsasl2-2_2.1.27+dfsg-2_amd64.deb ...
+Unpacking libsasl2-2:amd64 (2.1.27+dfsg-2) ...
+Selecting previously unselected package libldap-common.
+Preparing to unpack .../22-libldap-common_2.4.49+dfsg-2ubuntu1.5_all.deb ...
+Unpacking libldap-common (2.4.49+dfsg-2ubuntu1.5) ...
+Selecting previously unselected package libldap-2.4-2:amd64.
+Preparing to unpack .../23-libldap-2.4-2_2.4.49+dfsg-2ubuntu1.5_amd64.deb ...
+Unpacking libldap-2.4-2:amd64 (2.4.49+dfsg-2ubuntu1.5) ...
+Selecting previously unselected package libaprutil1-ldap:amd64.
+Preparing to unpack .../24-libaprutil1-ldap_1.6.1-4ubuntu2_amd64.deb ...
+Unpacking libaprutil1-ldap:amd64 (1.6.1-4ubuntu2) ...
+Selecting previously unselected package libbrotli1:amd64.
+Preparing to unpack .../25-libbrotli1_1.0.7-6ubuntu0.1_amd64.deb ...
+Unpacking libbrotli1:amd64 (1.0.7-6ubuntu0.1) ...
+Selecting previously unselected package libkrb5support0:amd64.
+Preparing to unpack .../26-libkrb5support0_1.17-6ubuntu4.1_amd64.deb ...
+Unpacking libkrb5support0:amd64 (1.17-6ubuntu4.1) ...
+Selecting previously unselected package libk5crypto3:amd64.
+Preparing to unpack .../27-libk5crypto3_1.17-6ubuntu4.1_amd64.deb ...
+Unpacking libk5crypto3:amd64 (1.17-6ubuntu4.1) ...
+Selecting previously unselected package libkeyutils1:amd64.
+Preparing to unpack .../28-libkeyutils1_1.6-6ubuntu1_amd64.deb ...
+Unpacking libkeyutils1:amd64 (1.6-6ubuntu1) ...
+Selecting previously unselected package libkrb5-3:amd64.
+Preparing to unpack .../29-libkrb5-3_1.17-6ubuntu4.1_amd64.deb ...
+Unpacking libkrb5-3:amd64 (1.17-6ubuntu4.1) ...
+Selecting previously unselected package libgssapi-krb5-2:amd64.
+Preparing to unpack .../30-libgssapi-krb5-2_1.17-6ubuntu4.1_amd64.deb ...
+Unpacking libgssapi-krb5-2:amd64 (1.17-6ubuntu4.1) ...
+Selecting previously unselected package libnghttp2-14:amd64.
+Preparing to unpack .../31-libnghttp2-14_1.40.0-1build1_amd64.deb ...
+Unpacking libnghttp2-14:amd64 (1.40.0-1build1) ...
+Selecting previously unselected package libpsl5:amd64.
+Preparing to unpack .../32-libpsl5_0.21.0-1ubuntu1_amd64.deb ...
+Unpacking libpsl5:amd64 (0.21.0-1ubuntu1) ...
+Selecting previously unselected package librtmp1:amd64.
+Preparing to unpack .../33-librtmp1_2.4+20151223.gitfa8646d.1-2build1_amd64.deb ...
+Unpacking librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build1) ...
+Selecting previously unselected package libssh-4:amd64.
+Preparing to unpack .../34-libssh-4_0.9.3-2ubuntu2.1_amd64.deb ...
+Unpacking libssh-4:amd64 (0.9.3-2ubuntu2.1) ...
+Selecting previously unselected package libcurl4:amd64.
+Preparing to unpack .../35-libcurl4_7.68.0-1ubuntu2.4_amd64.deb ...
+Unpacking libcurl4:amd64 (7.68.0-1ubuntu2.4) ...
+Selecting previously unselected package libjansson4:amd64.
+Preparing to unpack .../36-libjansson4_2.12-1build1_amd64.deb ...
+Unpacking libjansson4:amd64 (2.12-1build1) ...
+Selecting previously unselected package liblua5.2-0:amd64.
+Preparing to unpack .../37-liblua5.2-0_5.2.4-1.1build3_amd64.deb ...
+Unpacking liblua5.2-0:amd64 (5.2.4-1.1build3) ...
+Selecting previously unselected package libicu66:amd64.
+Preparing to unpack .../38-libicu66_66.1-2ubuntu2_amd64.deb ...
+Unpacking libicu66:amd64 (66.1-2ubuntu2) ...
+Selecting previously unselected package libxml2:amd64.
+Preparing to unpack .../39-libxml2_2.9.10+dfsg-5_amd64.deb ...
+Unpacking libxml2:amd64 (2.9.10+dfsg-5) ...
+Selecting previously unselected package apache2-bin.
+Preparing to unpack .../40-apache2-bin_2.4.41-4ubuntu3.1_amd64.deb ...
+Unpacking apache2-bin (2.4.41-4ubuntu3.1) ...
+Selecting previously unselected package apache2-data.
+Preparing to unpack .../41-apache2-data_2.4.41-4ubuntu3.1_all.deb ...
+Unpacking apache2-data (2.4.41-4ubuntu3.1) ...
+Selecting previously unselected package apache2-utils.
+Preparing to unpack .../42-apache2-utils_2.4.41-4ubuntu3.1_amd64.deb ...
+Unpacking apache2-utils (2.4.41-4ubuntu3.1) ...
+Selecting previously unselected package mime-support.
+Preparing to unpack .../43-mime-support_3.64ubuntu1_all.deb ...
+Unpacking mime-support (3.64ubuntu1) ...
+Selecting previously unselected package apache2.
+Preparing to unpack .../44-apache2_2.4.41-4ubuntu3.1_amd64.deb ...
+Unpacking apache2 (2.4.41-4ubuntu3.1) ...
+Selecting previously unselected package openssl.
+Preparing to unpack .../45-openssl_1.1.1f-1ubuntu2.1_amd64.deb ...
+Unpacking openssl (1.1.1f-1ubuntu2.1) ...
+Selecting previously unselected package ca-certificates.
+Preparing to unpack .../46-ca-certificates_20201027ubuntu0.20.04.1_all.deb ...
+Unpacking ca-certificates (20201027ubuntu0.20.04.1) ...
+Selecting previously unselected package libmagic-mgc.
+Preparing to unpack .../47-libmagic-mgc_1%3a5.38-4_amd64.deb ...
+Unpacking libmagic-mgc (1:5.38-4) ...
+Selecting previously unselected package libmagic1:amd64.
+Preparing to unpack .../48-libmagic1_1%3a5.38-4_amd64.deb ...
+Unpacking libmagic1:amd64 (1:5.38-4) ...
+Selecting previously unselected package file.
+Preparing to unpack .../49-file_1%3a5.38-4_amd64.deb ...
+Unpacking file (1:5.38-4) ...
+Selecting previously unselected package netbase.
+Preparing to unpack .../50-netbase_6.1_all.deb ...
+Unpacking netbase (6.1) ...
+Selecting previously unselected package xz-utils.
+Preparing to unpack .../51-xz-utils_5.2.4-1ubuntu1_amd64.deb ...
+Unpacking xz-utils (5.2.4-1ubuntu1) ...
+Selecting previously unselected package krb5-locales.
+Preparing to unpack .../52-krb5-locales_1.17-6ubuntu4.1_all.deb ...
+Unpacking krb5-locales (1.17-6ubuntu4.1) ...
+Selecting previously unselected package publicsuffix.
+Preparing to unpack .../53-publicsuffix_20200303.0012-1_all.deb ...
+Unpacking publicsuffix (20200303.0012-1) ...
+Selecting previously unselected package libsasl2-modules:amd64.
+Preparing to unpack .../54-libsasl2-modules_2.1.27+dfsg-2_amd64.deb ...
+Unpacking libsasl2-modules:amd64 (2.1.27+dfsg-2) ...
+Selecting previously unselected package ssl-cert.
+Preparing to unpack .../55-ssl-cert_1.0.39_all.deb ...
+Unpacking ssl-cert (1.0.39) ...
+Setting up libexpat1:amd64 (2.2.9-1build1) ...
+Setting up libkeyutils1:amd64 (1.6-6ubuntu1) ...
+Setting up libpsl5:amd64 (0.21.0-1ubuntu1) ...
+Setting up perl-modules-5.30 (5.30.0-9ubuntu0.2) ...
+Setting up mime-support (3.64ubuntu1) ...
+Setting up libmagic-mgc (1:5.38-4) ...
+Setting up libicu66:amd64 (66.1-2ubuntu2) ...
+Setting up libssl1.1:amd64 (1.1.1f-1ubuntu2.1) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+Setting up libbrotli1:amd64 (1.0.7-6ubuntu0.1) ...
+Setting up libsqlite3-0:amd64 (3.31.1-4ubuntu0.2) ...
+Setting up libsasl2-modules:amd64 (2.1.27+dfsg-2) ...
+Setting up libnghttp2-14:amd64 (1.40.0-1build1) ...
+Setting up libmagic1:amd64 (1:5.38-4) ...
+Setting up libapr1:amd64 (1.6.5-1ubuntu1) ...
+Setting up krb5-locales (1.17-6ubuntu4.1) ...
+Setting up file (1:5.38-4) ...
+Setting up libldap-common (2.4.49+dfsg-2ubuntu1.5) ...
+Setting up libjansson4:amd64 (2.12-1build1) ...
+Setting up libkrb5support0:amd64 (1.17-6ubuntu4.1) ...
+Setting up libsasl2-modules-db:amd64 (2.1.27+dfsg-2) ...
+Setting up librtmp1:amd64 (2.4+20151223.gitfa8646d.1-2build1) ...
+Setting up xz-utils (5.2.4-1ubuntu1) ...
+update-alternatives: using /usr/bin/xz to provide /usr/bin/lzma (lzma) in auto mode
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzma.1.gz because associated file /usr/share/man/man1/xz.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/unlzma.1.gz because associated file /usr/share/man/man1/unxz.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzcat.1.gz because associated file /usr/share/man/man1/xzcat.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzmore.1.gz because associated file /usr/share/man/man1/xzmore.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzless.1.gz because associated file /usr/share/man/man1/xzless.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzdiff.1.gz because associated file /usr/share/man/man1/xzdiff.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzcmp.1.gz because associated file /usr/share/man/man1/xzcmp.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzgrep.1.gz because associated file /usr/share/man/man1/xzgrep.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzegrep.1.gz because associated file /usr/share/man/man1/xzegrep.1.gz (of link group lzma) doesn't exist
+update-alternatives: warning: skip creation of /usr/share/man/man1/lzfgrep.1.gz because associated file /usr/share/man/man1/xzfgrep.1.gz (of link group lzma) doesn't exist
+Setting up libk5crypto3:amd64 (1.17-6ubuntu4.1) ...
+Setting up libsasl2-2:amd64 (2.1.27+dfsg-2) ...
+Setting up libroken18-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Setting up liblua5.2-0:amd64 (5.2.4-1.1build3) ...
+Setting up netbase (6.1) ...
+Setting up libkrb5-3:amd64 (1.17-6ubuntu4.1) ...
+Setting up apache2-data (2.4.41-4ubuntu3.1) ...
+Setting up openssl (1.1.1f-1ubuntu2.1) ...
+Setting up publicsuffix (20200303.0012-1) ...
+Setting up libxml2:amd64 (2.9.10+dfsg-5) ...
+Setting up libheimbase1-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Setting up libgdbm6:amd64 (1.18.1-5) ...
+Setting up libaprutil1:amd64 (1.6.1-4ubuntu2) ...
+Setting up libasn1-8-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Setting up libaprutil1-dbd-sqlite3:amd64 (1.6.1-4ubuntu2) ...
+Setting up libhcrypto4-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Setting up ca-certificates (20201027ubuntu0.20.04.1) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+Updating certificates in /etc/ssl/certs...
+138 added, 0 removed; done.
+Setting up libwind0-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Setting up ssl-cert (1.0.39) ...
+debconf: unable to initialize frontend: Dialog
+debconf: (TERM is not set, so the dialog frontend is not usable.)
+debconf: falling back to frontend: Readline
+Setting up libgssapi-krb5-2:amd64 (1.17-6ubuntu4.1) ...
+Setting up libgdbm-compat4:amd64 (1.18.1-5) ...
+Setting up libssh-4:amd64 (0.9.3-2ubuntu2.1) ...
+Setting up libperl5.30:amd64 (5.30.0-9ubuntu0.2) ...
+Setting up apache2-utils (2.4.41-4ubuntu3.1) ...
+Setting up libhx509-5-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Setting up perl (5.30.0-9ubuntu0.2) ...
+Setting up libkrb5-26-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Setting up libheimntlm0-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Setting up libgssapi3-heimdal:amd64 (7.7.0+dfsg-1ubuntu1) ...
+Setting up libldap-2.4-2:amd64 (2.4.49+dfsg-2ubuntu1.5) ...
+Setting up libaprutil1-ldap:amd64 (1.6.1-4ubuntu2) ...
+Setting up libcurl4:amd64 (7.68.0-1ubuntu2.4) ...
+Setting up apache2-bin (2.4.41-4ubuntu3.1) ...
+Setting up apache2 (2.4.41-4ubuntu3.1) ...
+Enabling module mpm_event.
+Enabling module authz_core.
+Enabling module authz_host.
+Enabling module authn_core.
+Enabling module auth_basic.
+Enabling module access_compat.
+Enabling module authn_file.
+Enabling module authz_user.
+Enabling module alias.
+Enabling module dir.
+Enabling module autoindex.
+Enabling module env.
+Enabling module mime.
+Enabling module negotiation.
+Enabling module setenvif.
+Enabling module filter.
+Enabling module deflate.
+Enabling module status.
+Enabling module reqtimeout.
+Enabling conf charset.
+Enabling conf localized-error-pages.
+Enabling conf other-vhosts-access-log.
+Enabling conf security.
+Enabling conf serve-cgi-bin.
+Enabling site 000-default.
+invoke-rc.d: could not determine current runlevel
+invoke-rc.d: policy-rc.d denied execution of start.
+Processing triggers for libc-bin (2.31-0ubuntu9.1) ...
+Processing triggers for ca-certificates (20201027ubuntu0.20.04.1) ...
+Updating certificates in /etc/ssl/certs...
+0 added, 0 removed; done.
+Running hooks in /etc/ca-certificates/update.d...
+done.
+Removing intermediate container 16715cbc79aa
+ ---> 9f9d4580f064
+Step 5/8 : RUN apt-get install -y apache2-utils
+ ---> Running in 9cbafc428705
+Reading package lists...
+Building dependency tree...
+Reading state information...
+apache2-utils is already the newest version (2.4.41-4ubuntu3.1).
+apache2-utils set to manually installed.
+0 upgraded, 0 newly installed, 0 to remove and 6 not upgraded.
+Removing intermediate container 9cbafc428705
+ ---> a3f70c544ff8
+Step 6/8 : RUN apt-get clean
+ ---> Running in 9419cf4fc8f4
+Removing intermediate container 9419cf4fc8f4
+ ---> a379c4a285d2
+Step 7/8 : EXPOSE 80
+ ---> Running in 73c75867b7b1
+Removing intermediate container 73c75867b7b1
+ ---> c8394436ab01
+Step 8/8 : CMD ["apache2ctl", "-D", "FOREGROUND"]
+ ---> Running in bc35e47f93e1
+Removing intermediate container bc35e47f93e1
+ ---> 358bd362947e
+Successfully built 358bd362947e
+Successfully tagged myapache:latest
+[vagrant@localhost sample_image]$ docker images
+REPOSITORY              TAG       IMAGE ID       CREATED          SIZE
+myapache                latest    358bd362947e   31 seconds ago   215MB
+localhost:5000/myhttp   latest    aae3bb77cd57   59 minutes ago   134MB
+myhttp                  latest    aae3bb77cd57   59 minutes ago   134MB
+httpd                   latest    683a7aad17d3   10 days ago      138MB
+mysql                   5.7.32    f07dfa83b528   4 weeks ago      448MB
+registry                2         678dfa38fcfa   5 weeks ago      26.2MB
+ubuntu                  latest    f643c72bc252   8 weeks ago      72.9MB
+hello-world             latest    bf756fb1ae65   12 months ago    13.3kB
+[vagrant@localhost sample_image]$ docker login
+Login with your Docker ID to push and pull images from Docker Hub. If you don't have a Docker ID, head over to https://hub.docker.com to create one.
+Username: 782012
+Password:
+WARNING! Your password will be stored unencrypted in /home/vagrant/.docker/config.json.
+Configure a credential helper to remove this warning. See
+https://docs.docker.com/engine/reference/commandline/login/#credentials-store
+
+Login Succeeded
+[vagrant@localhost sample_image]$ docker tag myapache:latest 782012/shuvankar_myapache:latest
+[vagrant@localhost sample_image]$ docker push 782012/shuvankar_myapache:latest
+The push refers to repository [docker.io/782012/shuvankar_myapache]
+65f8ba957257: Pushed
+2c379412365e: Pushed
+d729bd4a99d8: Pushed
+b3a8d4599eca: Pushed
+a70019432376: Pushed
+f6253634dc78: Mounted from library/ubuntu
+9069f84dbbe9: Mounted from library/ubuntu
+bacd3af13903: Mounted from library/ubuntu
+latest: digest: sha256:8fa9ada78f79456b5e7a257794e848175b9ac4226501c5025522d5b9b0543ca8 size: 1992
+[vagrant@localhost sample_image]$ docker run -d --name project 782012/shuvankar_myapache
+2212c090de27b865c55b40d0fea1d0b28a3970482acc8f5d381a28caa066d1ed
+[vagrant@localhost sample_image]$ docker ps  -l
+CONTAINER ID   IMAGE                       COMMAND                  CREATED          STATUS          PORTS     NAMES
+2212c090de27   782012/shuvankar_myapache   "apache2ctl -D FOREG…"   36 seconds ago   Up 35 seconds   80/tcp    project
+[vagrant@localhost sample_image]$ docker inspect project | grep IPA
+            "SecondaryIPAddresses": null,
+            "IPAddress": "172.17.0.3",
+                    "IPAMConfig": null,
+                    "IPAddress": "172.17.0.3",
+[vagrant@localhost sample_image]$ curl hhtp://172.17.0.3
+curl: (1) Protocol hhtp not supported or disabled in libcurl
+[vagrant@localhost sample_image]$ curl http://172.17.0.3
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <!--
+    Modified from the Debian original for Ubuntu
+    Last updated: 2016-11-16
+    See: https://launchpad.net/bugs/1288690
+  -->
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Apache2 Ubuntu Default Page: It works</title>
+    <style type="text/css" media="screen">
+  * {
+    margin: 0px 0px 0px 0px;
+    padding: 0px 0px 0px 0px;
+  }
+
+  body, html {
+    padding: 3px 3px 3px 3px;
+
+    background-color: #D8DBE2;
+
+    font-family: Verdana, sans-serif;
+    font-size: 11pt;
+    text-align: center;
+  }
+
+  div.main_page {
+    position: relative;
+    display: table;
+
+    width: 800px;
+
+    margin-bottom: 3px;
+    margin-left: auto;
+    margin-right: auto;
+    padding: 0px 0px 0px 0px;
+
+    border-width: 2px;
+    border-color: #212738;
+    border-style: solid;
+
+    background-color: #FFFFFF;
+
+    text-align: center;
+  }
+
+  div.page_header {
+    height: 99px;
+    width: 100%;
+
+    background-color: #F5F6F7;
+  }
+
+  div.page_header span {
+    margin: 15px 0px 0px 50px;
+
+    font-size: 180%;
+    font-weight: bold;
+  }
+
+  div.page_header img {
+    margin: 3px 0px 0px 40px;
+
+    border: 0px 0px 0px;
+  }
+
+  div.table_of_contents {
+    clear: left;
+
+    min-width: 200px;
+
+    margin: 3px 3px 3px 3px;
+
+    background-color: #FFFFFF;
+
+    text-align: left;
+  }
+
+  div.table_of_contents_item {
+    clear: left;
+
+    width: 100%;
+
+    margin: 4px 0px 0px 0px;
+
+    background-color: #FFFFFF;
+
+    color: #000000;
+    text-align: left;
+  }
+
+  div.table_of_contents_item a {
+    margin: 6px 0px 0px 6px;
+  }
+
+  div.content_section {
+    margin: 3px 3px 3px 3px;
+
+    background-color: #FFFFFF;
+
+    text-align: left;
+  }
+
+  div.content_section_text {
+    padding: 4px 8px 4px 8px;
+
+    color: #000000;
+    font-size: 100%;
+  }
+
+  div.content_section_text pre {
+    margin: 8px 0px 8px 0px;
+    padding: 8px 8px 8px 8px;
+
+    border-width: 1px;
+    border-style: dotted;
+    border-color: #000000;
+
+    background-color: #F5F6F7;
+
+    font-style: italic;
+  }
+
+  div.content_section_text p {
+    margin-bottom: 6px;
+  }
+
+  div.content_section_text ul, div.content_section_text li {
+    padding: 4px 8px 4px 16px;
+  }
+
+  div.section_header {
+    padding: 3px 6px 3px 6px;
+
+    background-color: #8E9CB2;
+
+    color: #FFFFFF;
+    font-weight: bold;
+    font-size: 112%;
+    text-align: center;
+  }
+
+  div.section_header_red {
+    background-color: #CD214F;
+  }
+
+  div.section_header_grey {
+    background-color: #9F9386;
+  }
+
+  .floating_element {
+    position: relative;
+    float: left;
+  }
+
+  div.table_of_contents_item a,
+  div.content_section_text a {
+    text-decoration: none;
+    font-weight: bold;
+  }
+
+  div.table_of_contents_item a:link,
+  div.table_of_contents_item a:visited,
+  div.table_of_contents_item a:active {
+    color: #000000;
+  }
+
+  div.table_of_contents_item a:hover {
+    background-color: #000000;
+
+    color: #FFFFFF;
+  }
+
+  div.content_section_text a:link,
+  div.content_section_text a:visited,
+   div.content_section_text a:active {
+    background-color: #DCDFE6;
+
+    color: #000000;
+  }
+
+  div.content_section_text a:hover {
+    background-color: #000000;
+
+    color: #DCDFE6;
+  }
+
+  div.validator {
+  }
+    </style>
+  </head>
+  <body>
+    <div class="main_page">
+      <div class="page_header floating_element">
+        <img src="/icons/ubuntu-logo.png" alt="Ubuntu Logo" class="floating_element"/>
+        <span class="floating_element">
+          Apache2 Ubuntu Default Page
+        </span>
+      </div>
+<!--      <div class="table_of_contents floating_element">
+        <div class="section_header section_header_grey">
+          TABLE OF CONTENTS
+        </div>
+        <div class="table_of_contents_item floating_element">
+          <a href="#about">About</a>
+        </div>
+        <div class="table_of_contents_item floating_element">
+          <a href="#changes">Changes</a>
+        </div>
+        <div class="table_of_contents_item floating_element">
+          <a href="#scope">Scope</a>
+        </div>
+        <div class="table_of_contents_item floating_element">
+          <a href="#files">Config files</a>
+        </div>
+      </div>
+-->
+      <div class="content_section floating_element">
+
+
+        <div class="section_header section_header_red">
+          <div id="about"></div>
+          It works!
+        </div>
+        <div class="content_section_text">
+          <p>
+                This is the default welcome page used to test the correct
+                operation of the Apache2 server after installation on Ubuntu systems.
+                It is based on the equivalent page on Debian, from which the Ubuntu Apache
+                packaging is derived.
+                If you can read this page, it means that the Apache HTTP server installed at
+                this site is working properly. You should <b>replace this file</b> (located at
+                <tt>/var/www/html/index.html</tt>) before continuing to operate your HTTP server.
+          </p>
+
+
+          <p>
+                If you are a normal user of this web site and don't know what this page is
+                about, this probably means that the site is currently unavailable due to
+                maintenance.
+                If the problem persists, please contact the site's administrator.
+          </p>
+
+        </div>
+        <div class="section_header">
+          <div id="changes"></div>
+                Configuration Overview
+        </div>
+        <div class="content_section_text">
+          <p>
+                Ubuntu's Apache2 default configuration is different from the
+                upstream default configuration, and split into several files optimized for
+                interaction with Ubuntu tools. The configuration system is
+                <b>fully documented in
+                /usr/share/doc/apache2/README.Debian.gz</b>. Refer to this for the full
+                documentation. Documentation for the web server itself can be
+                found by accessing the <a href="/manual">manual</a> if the <tt>apache2-doc</tt>
+                package was installed on this server.
+
+          </p>
+          <p>
+                The configuration layout for an Apache2 web server installation on Ubuntu systems is as follows:
+          </p>
+          <pre>
+/etc/apache2/
+|-- apache2.conf
+|       `--  ports.conf
+|-- mods-enabled
+|       |-- *.load
+|       `-- *.conf
+|-- conf-enabled
+|       `-- *.conf
+|-- sites-enabled
+|       `-- *.conf
+          </pre>
+          <ul>
+                        <li>
+                           <tt>apache2.conf</tt> is the main configuration
+                           file. It puts the pieces together by including all remaining configuration
+                           files when starting up the web server.
+                        </li>
+
+                        <li>
+                           <tt>ports.conf</tt> is always included from the
+                           main configuration file. It is used to determine the listening ports for
+                           incoming connections, and this file can be customized anytime.
+                        </li>
+
+                        <li>
+                           Configuration files in the <tt>mods-enabled/</tt>,
+                           <tt>conf-enabled/</tt> and <tt>sites-enabled/</tt> directories contain
+                           particular configuration snippets which manage modules, global configuration
+                           fragments, or virtual host configurations, respectively.
+                        </li>
+
+                        <li>
+                           They are activated by symlinking available
+                           configuration files from their respective
+                           *-available/ counterparts. These should be managed
+                           by using our helpers
+                           <tt>
+                                a2enmod,
+                                a2dismod,
+                           </tt>
+                           <tt>
+                                a2ensite,
+                                a2dissite,
+                            </tt>
+                                and
+                           <tt>
+                                a2enconf,
+                                a2disconf
+                           </tt>. See their respective man pages for detailed information.
+                        </li>
+
+                        <li>
+                           The binary is called apache2. Due to the use of
+                           environment variables, in the default configuration, apache2 needs to be
+                           started/stopped with <tt>/etc/init.d/apache2</tt> or <tt>apache2ctl</tt>.
+                           <b>Calling <tt>/usr/bin/apache2</tt> directly will not work</b> with the
+                           default configuration.
+                        </li>
+          </ul>
+        </div>
+
+        <div class="section_header">
+            <div id="docroot"></div>
+                Document Roots
+        </div>
+
+        <div class="content_section_text">
+            <p>
+                By default, Ubuntu does not allow access through the web browser to
+                <em>any</em> file apart of those located in <tt>/var/www</tt>,
+                <a href="http://httpd.apache.org/docs/2.4/mod/mod_userdir.html" rel="nofollow">public_html</a>
+                directories (when enabled) and <tt>/usr/share</tt> (for web
+                applications). If your site is using a web document root
+                located elsewhere (such as in <tt>/srv</tt>) you may need to whitelist your
+                document root directory in <tt>/etc/apache2/apache2.conf</tt>.
+            </p>
+            <p>
+                The default Ubuntu document root is <tt>/var/www/html</tt>. You
+                can make your own virtual hosts under /var/www. This is different
+                to previous releases which provides better security out of the box.
+            </p>
+        </div>
+
+        <div class="section_header">
+          <div id="bugs"></div>
+                Reporting Problems
+        </div>
+        <div class="content_section_text">
+          <p>
+                Please use the <tt>ubuntu-bug</tt> tool to report bugs in the
+                Apache2 package with Ubuntu. However, check <a
+                href="https://bugs.launchpad.net/ubuntu/+source/apache2"
+                rel="nofollow">existing bug reports</a> before reporting a new bug.
+          </p>
+          <p>
+                Please report bugs specific to modules (such as PHP and others)
+                to respective packages, not to the web server itself.
+          </p>
+        </div>
+
+
+
+
+      </div>
+    </div>
+    <div class="validator">
+    </div>
+  </body>
+</html>
+
